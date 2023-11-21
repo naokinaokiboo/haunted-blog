@@ -3,7 +3,7 @@
 class BlogsController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show]
 
-  before_action :set_blog, only: %i[show update destroy]
+  before_action :set_blog, only: %i[show destroy]
 
   def index
     @blogs = Blog.search(params[:term]).published.default_order
@@ -30,6 +30,7 @@ class BlogsController < ApplicationController
   end
 
   def update
+    @blog = current_user.blogs.find(params[:id])
     if @blog.update(blog_params)
       redirect_to blog_url(@blog), notice: 'Blog was successfully updated.'
     else
