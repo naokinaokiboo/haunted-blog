@@ -3,13 +3,17 @@
 class BlogsController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show]
 
-  before_action :set_blog, only: %i[show]
-
   def index
     @blogs = Blog.search(params[:term]).published.default_order
   end
 
-  def show; end
+  def show
+    @blog = if current_user
+              Blog.where(user_id: current_user.id).or(Blog.where(secret: false)).find(params[:id])
+            else
+              Blog.where(secret: false).find(params[:id])
+            end
+  end
 
   def new
     @blog = Blog.new
@@ -46,10 +50,6 @@ class BlogsController < ApplicationController
   end
 
   private
-
-  def set_blog
-    @blog = Blog.find(params[:id])
-  end
 
   def blog_params
     params.require(:blog).permit(:title, :content, :secret, :random_eyecatch)
